@@ -1,0 +1,24 @@
+version: '3'
+services:
+  data_stream:
+    build:
+      context: ./data_stream
+    ports:
+      - "50051:50051"
+  analytics:
+    build:
+      context: ./analytics
+    depends_on:
+      - "data_stream"
+    command: ["./wait-for-it.sh", "data_stream:50051", "--timeout=3", "--", "python3", "client.py"]
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+  web:
+    build:
+      context: ./web
+    ports:
+      - "8080:5000"
+    depends_on:
+      - "redis"
